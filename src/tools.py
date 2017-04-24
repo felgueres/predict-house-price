@@ -17,3 +17,6 @@ def MRAE(y_true, y_pred):
     '''
 
     return np.median(np.absolute(y_pred - y_true) / y_true)
+
+if __name__ == '__main__':
+    pass
