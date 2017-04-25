@@ -1,9 +1,9 @@
 import pandas as pd
-from geopy.distance import vincenty as geodistance
+from geopy.distance import great_circle as geodistance
 import numpy as np
+from tools import MRAE
 
-
-class preprocessing(object):
+class Preprocessing(object):
     '''
     Preprocess data to avoid time-leakage.
 
@@ -14,7 +14,7 @@ class preprocessing(object):
 
     Output
     ------
-    Returns feature matrix and house pricing (ie. preprocessing.x, preprocessing.y)
+    Returns feature matrix and house pricing (ie. Preprocessing.x, Preprocessing.y)
     '''
 
     def __init__(self, path2data):
@@ -32,6 +32,7 @@ class preprocessing(object):
         '''
         Convert datatypes suitable for manipulation.
         '''
+        #Convert to DatetimeIndex
         self.df.close_date = pd.DatetimeIndex(self.df.close_date)
 
         return self
@@ -49,12 +50,13 @@ class preprocessing(object):
 
         Output
         ------
-        None (Only dataframe for home_i was modified.
+        None (Dataframe for home_i was modified).
 
         '''
         #Index homes.
         self.home_i = home_i
 
+        #Mask to avoid time leakage.
         self.df_home_i = self.df.ix[self.df.close_date > self.df.iloc[self.home_i].close_date].copy()
 
     def _distance(self):
@@ -68,11 +70,11 @@ class preprocessing(object):
 
         Output
         ------
-        None
+        None (Dataframe for home_i was modified).
 
         '''
         #Index Home i
-        home_i = self.df_home_i.iloc[self.home_i]
+        home_i = self.df.iloc[self.home_i]
 
         #Get home_i coordenates
         home_i_coord = (home_i.latitude, home_i.longitude)
@@ -85,6 +87,11 @@ class preprocessing(object):
 
     def get_training_data(self, home_i):
         '''
+        Parameters
+        ----------
+        home_i: integer
+            Index number of home to predict value for.
+
         Output
         ------
         X: array-like
@@ -93,6 +100,8 @@ class preprocessing(object):
         Y: array-like
             Returns home closing price.
         '''
+        #Convert to DatetimeIndex
+        self._datatypes()
 
         #Filter dataframe avoiding time leakage for home i.
         self._time_leakage(home_i)
@@ -120,66 +129,83 @@ class KNearestNeighbors(object):
 
     distance: function
         Function to calculate distance (not neccesarily spatial).
-
     '''
 
-    def __init__(self, k=4, distance=geodistance):
+    def __init__(self, k=4, distance=geodistance, weights = None):
         self.k = k
         self.distance = distance
-        self.preprocessing = None #This is to import the preprocessing class.
+        self.Preprocessing = None #This is to import the Preprocessing class.
         self.predictions = [] #To store model predictions.
+        self.weights = None #If we were to make this model more complex, suitable weigths would be selected based on cross-validates feature importance.
+        self.model_performance = None #Attribute to get MRAE.
 
-    def fit(self, preprocessing):
+    def fit(self, Preprocessing):
         '''
-        Takes in preprocessing class to fit feature matrix (X) and closing price (y), assuring there is not time leakage.
+        Takes in Preprocessing class to fit feature matrix (X) and closing price (y), assuring there is not time leakage.
         '''
         #Loads data and proprocessing class.
-        self.preprocessing = preprocessing
+        self.Preprocessing = Preprocessing
 
     def predict(self):
         '''
-        Predict method, retur
+        Predict home price.
         '''
         #For each home, iterate to get X_train, y_train and predict k neighrest with weights w.
-        #Note the preprocessing class handles calculating the distance.
+        #Note the Preprocessing class handles calculating the distance.
 
         #Create y_pred, y_actual results.
         self.predictions = []
 
-        for home_i in self.preprocessing.df.index.tolist()[:1]:
+        #Truncate dataframe to only first 1000 predictions.
+        for home_i in self.Preprocessing.df.index.tolist()[:1000]:
 
             #Get training data
-            X_train, y_train = self.preprocessing.get_training_data(home_i)
+            X_train, y_train = self.Preprocessing.get_training_data(home_i)
 
             #Sort and get top k.
             top_k = y_train[X_train.argsort()[:self.k]]  #sort and take top k
 
             #Use weights to compute house pricing.
             #In this case I will use the mean, ie. for k = 4, w = 0.25
-            home_i_price = np.mean(np.absolute(top_k)) #I noted about 4% of the dataset has negative sign values for pricing, I'll consider those to be positive for business sense.
+            home_i_pred = np.mean(np.absolute(top_k)) #I noted about 4% of the dataset has negative sign values for pricing, I'll consider those to be positive for business sense.
 
-            self.predictions.append((y_train, home_i_price))
+            #Get actual home price.
+            home_i_actual = np.absolute(self.Preprocessing.df.iloc[home_i].close_price)
 
-        return self.predictions
+            #Append to list as tuple for later conversion to numpy array.
+            self.predictions.append((home_i_pred, home_i_actual))
+
+        #Truncate df to only the first 1000 predictions.
+        self.df_truncated = self.Preprocessing.df.iloc[:1000,:].copy()
+
+        #Insert Column with predictions
+        self.df_truncated['pred'] = np.array(self.predictions)[:,0] #from above, note the position for predictions in the tuple is 0.
 
     def performance(self):
         '''
-        Compute performance of model.
+        Compute performance of model element wise and overall.
         '''
-        #Need to expand the predictions and use metric from tools.
+        #Compute RAE element-wise.
+        self.df_truncated['RAE'] = np.absolute(np.absolute(self.df_truncated.close_price) - self.df_truncated.pred) / np.absolute(self.df_truncated.close_price)
+        #Compute MRAE.
+        self.model_performance = np.median(self.df_truncated.RAE)
 
-
+        #Return Model Performance
+        print 'Model Median Relative Absolute Error: {0:.1%}'.format(self.model_performance)
 
 if __name__ == '__main__':
 
     #Initialize model.
     knn = KNearestNeighbors(k=4, distance = geodistance)
 
-    #Initialize preprocessing class with data.
-    data = preprocessing('../data/data.csv')
+    #Initialize Preprocessing class with data.
+    data = Preprocessing('../data/data.csv')
 
-    #Fit dataset to model using the preprocessing class.
+    #Fit dataset to model using the Preprocessing class.
     knn.fit(data)
 
     #Predict
     knn.predict()
+
+    #Model Performance
+    knn.performance()
