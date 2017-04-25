@@ -4,9 +4,10 @@
 
 ## Questions:  
 
-## 1) Using the dataset provided, please build a k-NN model for k = 4 that avoids time leakage.
+### 1) Using the dataset provided, please build a k-NN model for k = 4 that avoids time leakage.
 
-### See folder /src with two files:
+### _See folder /src with two files:_
+
 - model.py: Contains two classes to build the kNN model.
 
   Preprocessing class:
@@ -39,7 +40,17 @@
 
 - tools.py: Contains auxiliary functions.
 
-## 2) What is the performance of the model measured in Median Relative Absolute Error?
+### Instructions to model
+
+    > 1) Navigate to folder _/src_
+
+    > 2) Run in terminal -ipython model.py
+
+    > 3) It will print out the model performance metric.
+
+    > 4) Explore the kNN class for documentation on getting predictions and preprocessed data to avoid time-leaks.
+
+### 2) What is the performance of the model measured in Median Relative Absolute Error?
 
   The data pipeline I built in this allotted timeframe is not optimized for computation efficiency (details on Q.5).
   I truncated the computations after 1000 predictions which accounts for only 1.1% of the dataset.
