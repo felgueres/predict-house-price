@@ -58,7 +58,7 @@
 
   By performing a quick scatter matrix on the 1000 sample predictions, I notice the performance of the model reduces dramatically around a lat, lon = (36, -100). However, I also notice those coordinates represent the bulk of the sample so it's not conclusive whether that is a error trend in the model.
 
-  ![alt text](https://github.com/felgueres/opendoor/)
+  ![alt text](https://github.com/felgueres/opendoor/blob/master/images/scatter_matrix.JPG)
 
   The time-span of my sample predictions covers a 6-month period during 2014. There seems to be an intra-month seasonality but before jumping into a conclusion I would want to perform further predictions; then inspect the error distribution, fit to a function for quantitative inference.
 
