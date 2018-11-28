@@ -1,11 +1,8 @@
-## Pablo Felgueres
 ## 4/24/2017
 
 ## Predict house pricing implementing a KNN model.
 
-## Questions:  
-
-### 1) Using the dataset provided, please build a k-NN model for k = 4 that avoids time leakage.
+## Goal: Build a k-NN model for k = 4 that avoids time leakage.
 
 ### _See folder /src with two files:_
 
