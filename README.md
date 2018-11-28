@@ -1,6 +1,7 @@
-## Opendoor: Data Science Takehome Assignment
 ## Pablo Felgueres
 ## 4/24/2017
+
+## Predict house pricing implementing a KNN model.
 
 ## Questions:  
 
@@ -83,7 +84,7 @@ Then check if the hypothesis is true, and based on the temporal contribution to 
 
 On the other hand, considering the value of homes is determined by characteristics other than location and temporality, the most logical step would be to understand the key features that describe and correlate to the value of a home. For example, we could do this via quantitative analysis (ex. linear regression regularized L1) as well as to obtain intangibles/heuristics from field agents.
 
-In terms of which model or function to use, an interesting consideration is whether interpretability is of value or not. Most likely we could use a non-parametric model (ex. Random Forest) and achieve the higher accuracies; however, in Opendoor's particular interest, a client is interested in transparency and would presumably value the information taken into account as well as the weights to achieve the final pricing so one must navigate a trade-off between interpretability and accuracy.
+In terms of which model or function to use, an interesting consideration is whether interpretability is of value or not. Most likely we could use a non-parametric model (ex. Random Forest) and achieve the higher accuracies; however, in our particular interest, a client is interested in transparency and would presumably value the information taken into account as well as the weights to achieve the final pricing so one must navigate a trade-off between interpretability and accuracy.
 
 ### 6) How would you productionize this model?
 
