@@ -1,8 +1,8 @@
-## 4/24/2017
+### 4/24/2017
 
-## Predict house pricing implementing a KNN model.
+### Predict house pricing implementing a KNN model.
 
-## Goal: Build a k-NN model for k = 4 that avoids time leakage.
+### Goal: Build a k-NN model for k = 4 that avoids time leakage.
 
 ### _See folder /src with two files:_
 
